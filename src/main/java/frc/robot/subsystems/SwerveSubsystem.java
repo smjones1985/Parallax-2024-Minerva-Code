@@ -102,7 +102,7 @@ public class SwerveSubsystem extends SubsystemBase {
         // makes a team color chooser
         colorChooser.addOption(red, red);
         colorChooser.addOption(blue, blue);
-        driverBoard.add("Team Chooser", colorChooser).withWidget(BuiltInWidgets.kComboBoxChooser);
+        //driverBoard.add("Team Chooser", colorChooser).withWidget(BuiltInWidgets.kComboBoxChooser);
 
         xLimiter = new AccelerationLimiter(DriveConstants.kTeleDriveMaxAccelerationUnitsPerSecond);
         yLimiter = new AccelerationLimiter(DriveConstants.kTeleDriveMaxAccelerationUnitsPerSecond);
