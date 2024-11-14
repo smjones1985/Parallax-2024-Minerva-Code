@@ -3,16 +3,16 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.912506594243959,
-        "y": 5.525086266457521
+        "x": 3.04,
+        "y": 5.41
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.9223735370547685,
-        "y": 5.525086266457521
+        "x": 3.04,
+        "y": 5.400133057189191
       },
       "isLocked": false,
-      "linkedName": "Note Position 2"
+      "linkedName": null
     },
     {
       "anchor": {
@@ -20,8 +20,8 @@
         "y": 4.09478126648561
       },
       "prevControl": {
-        "x": 0.6924444618120023,
-        "y": 4.084914323674802
+        "x": -0.2504030575765105,
+        "y": 3.9098902756257994
       },
       "nextControl": null,
       "isLocked": false,
@@ -45,7 +45,7 @@
   "reversed": false,
   "folder": null,
   "previewStartingState": {
-    "rotation": 0,
+    "rotation": -90.0,
     "velocity": 0
   },
   "useDefaultConstraints": true
