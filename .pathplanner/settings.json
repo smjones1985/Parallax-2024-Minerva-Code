@@ -3,10 +3,17 @@
   "robotLength": 1.21,
   "holonomicMode": true,
   "pathFolders": [
-    "Note to note paths",
+    "Random Spot to Note",
+    "Note to Note",
+    "Note to Random Spot",
     "Speaker to notes paths"
   ],
-  "autoFolders": [],
+  "autoFolders": [
+    "2 Note Autos",
+    "3 Note Autos",
+    "5 Note Autos",
+    "4 Note Autos"
+  ],
   "defaultMaxVel": 1.0,
   "defaultMaxAccel": 3.0,
   "defaultMaxAngVel": 540.0,

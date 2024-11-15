@@ -43,7 +43,7 @@
     "rotateFast": false
   },
   "reversed": false,
-  "folder": null,
+  "folder": "Speaker to notes paths",
   "previewStartingState": {
     "rotation": -60.140983835076916,
     "velocity": 0
