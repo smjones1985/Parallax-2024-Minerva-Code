@@ -16,19 +16,41 @@
     },
     {
       "anchor": {
-        "x": 2.409292510892716,
-        "y": 4.09478126648561
+        "x": 1.2241927259296066,
+        "y": 4.083781287831709
       },
       "prevControl": {
-        "x": -0.2504030575765105,
-        "y": 3.9098902756257994
+        "x": 1.2450596473943158,
+        "y": 4.049003085390527
+      },
+      "nextControl": {
+        "x": 1.2033258044648973,
+        "y": 4.118559490272891
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 2.4762080138121587,
+        "y": 4.083781287831709
+      },
+      "prevControl": {
+        "x": 1.8432447293826466,
+        "y": 4.076825647343473
       },
       "nextControl": null,
       "isLocked": false,
       "linkedName": "Note Position 3"
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 1.0,
+      "rotationDegrees": 0,
+      "rotateFast": true
+    }
+  ],
   "constraintZones": [],
   "eventMarkers": [],
   "globalConstraints": {
