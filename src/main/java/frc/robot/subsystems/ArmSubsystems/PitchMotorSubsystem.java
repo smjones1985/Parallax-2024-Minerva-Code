@@ -19,7 +19,7 @@ import frc.robot.subsystems.SwerveSubsystem;
 public class PitchMotorSubsystem extends SubsystemBase {
     private CANSparkMax pitchMotor = new CANSparkMax(PitchMotor.kPitchMotorId, MotorType.kBrushless);
     private PIDController pitchPIDController = new PIDController(PitchMotor.kPitchMotorKP, 0, 0);
-    private PIDController fasterPitchPIDController = new PIDController(.05, 0.1, 0);
+    private PIDController fasterPitchPIDController = new PIDController(.1, 0.1, 0);
     public AnalogEncoder pitchMotorEncoder = new AnalogEncoder(ArmMotorsConstants.PitchMotor.kPitchEncoderId);
     ShuffleboardTab encoderTab = Shuffleboard.getTab("Absolute Encoder"); // Move this eventually
     private GenericEntry internalEncoderPosition;

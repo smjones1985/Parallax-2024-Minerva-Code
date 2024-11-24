@@ -89,13 +89,13 @@ public final class Constants {
     public static final double kBackRightDriveAbsoluteEncoderOffsetAng = 0.35;
     public static final boolean kBackRightDriveAbsoluteEncoderReversed = false;
 
-    public static final double kPhysicalMaxSpeedMetersPerSecond = 6;
+    public static final double kPhysicalMaxSpeedMetersPerSecond = 18;
     public static final double kPhysicalMaxAngularSpeedRadiansPerSecond = 7 * 3 * Math.PI;
 
     public static final double kTeleDriveMaxSpeedMetersPerSecond = kPhysicalMaxSpeedMetersPerSecond;
     public static final double kTeleDriveMaxAngularSpeedRadiansPerSecond = kPhysicalMaxAngularSpeedRadiansPerSecond
         / 10;
-    public static final double kTeleDriveMaxAccelerationUnitsPerSecond = 8;
+    public static final double kTeleDriveMaxAccelerationUnitsPerSecond = 20;
     public static final double kTeleDriveMaxAngularAccelerationUnitsPerSecond = Math.PI * 2;
   }
 
