@@ -1,8 +1,8 @@
 package frc.robot.subsystems.ArmSubsystems;
 
-import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkBase.SoftLimitDirection;
 import com.revrobotics.CANSparkLowLevel.MotorType;
+import com.revrobotics.CANSparkMax;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.networktables.GenericEntry;
@@ -10,51 +10,64 @@ import edu.wpi.first.wpilibj.AnalogEncoder;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.AutoAiming;
-import frc.robot.Constants;
 import frc.robot.Constants.ArmMotorsConstants;
-import frc.robot.Constants.ArmMotorsConstants.*;
-import frc.robot.subsystems.SwerveSubsystem;
+import frc.robot.Constants.ArmMotorsConstants.PitchMotor;
 
 public class PitchMotorSubsystem extends SubsystemBase {
-    private CANSparkMax pitchMotor = new CANSparkMax(PitchMotor.kPitchMotorId, MotorType.kBrushless);
-    private PIDController pitchPIDController = new PIDController(PitchMotor.kPitchMotorKP, 0, 0);
-    private PIDController fasterPitchPIDController = new PIDController(.1, 0.1, 0);
-    public AnalogEncoder pitchMotorEncoder = new AnalogEncoder(ArmMotorsConstants.PitchMotor.kPitchEncoderId);
-    ShuffleboardTab encoderTab = Shuffleboard.getTab("Absolute Encoder"); // Move this eventually
-    private GenericEntry internalEncoderPosition;
-    private GenericEntry encoderVoltage;
-    private GenericEntry encoderDeg;
-    private GenericEntry pitchMotorSpeed;
-    public double baseIdleForce;
-    public boolean constantAim;
+    private final CANSparkMax pitchMotor;
+    private final PIDController pitchPIDController;
+    private final PIDController fasterPitchPIDController;
+    private final AnalogEncoder pitchMotorEncoder;
+    private final ShuffleboardTab encoderTab;
+    private final GenericEntry internalEncoderPosition;
+    private final GenericEntry encoderVoltage;
+    private final GenericEntry encoderDeg;
+    private final GenericEntry pitchMotorSpeed;
+
+    private double baseIdleForce;
+    private boolean constantAim;
 
     public PitchMotorSubsystem() {
+        this(new CANSparkMax(PitchMotor.kPitchMotorId, MotorType.kBrushless), 
+             new PIDController(PitchMotor.kPitchMotorKP, 0, 0), 
+             new PIDController(0.1, 0.1, 0), 
+             new AnalogEncoder(ArmMotorsConstants.PitchMotor.kPitchEncoderId),
+             Shuffleboard.getTab("Absolute Encoder"));
+    }
+
+    public PitchMotorSubsystem(CANSparkMax motor, PIDController pidController, PIDController fasterPidController, AnalogEncoder encoder, ShuffleboardTab shuffleboardTab) {
+        pitchMotor = motor;
+        pitchPIDController = pidController;
+        fasterPitchPIDController = fasterPidController;
+        pitchMotorEncoder = encoder;
+        encoderTab = shuffleboardTab;
 
         // make sure all of them have the same settings in case we grabbed one with
         // presets
         pitchMotor.restoreFactoryDefaults();
-
         constantAim = false;
 
-        // sets their constants
+        configureMotor();
+        /* Shuffleboard */
+        encoderVoltage = encoderTab.add("Encoder Voltage", 0.0).getEntry();
+        encoderDeg = encoderTab.add("Encoder Degrees", 0.0).getEntry();
+        pitchMotorSpeed = encoderTab.add("Pitch Motor Speed", 0.0).getEntry();
+        internalEncoderPosition = encoderTab.add("Internal Encoder Position", 0.0).getEntry();
+    }
+
+    /**
+     * Configures motor settings like idle mode, current limit, soft limits, and encoder scaling.
+     */
+    private void configureMotor() {
         pitchMotor.setIdleMode(com.revrobotics.CANSparkBase.IdleMode.kBrake);
         pitchMotor.setSmartCurrentLimit(39);
-
         pitchMotor.setSoftLimit(SoftLimitDirection.kReverse, (float) PitchMotor.kPitchEncoderReverseLimit);
         pitchMotor.setSoftLimit(SoftLimitDirection.kForward, (float) PitchMotor.kPitchEncoderForwardLimit);
-
         pitchMotorEncoder.setDistancePerRotation(360);
-        pitchMotor.getEncoder().setPositionConversionFactor(PitchMotor.kPitchInternalEncoderConversionFactor); // -44.44444...
+        pitchMotor.getEncoder().setPositionConversionFactor(PitchMotor.kPitchInternalEncoderConversionFactor);
         pitchMotor.getEncoder().setPosition(getEncoderDeg());
-
-        /* Shuffleboard */
-
-        encoderVoltage = encoderTab.add("Encoder Voltage", 0.0d).getEntry();
-        encoderDeg = encoderTab.add("Encoder Degrees", 0.0d).getEntry();
-        pitchMotorSpeed = encoderTab.add("Pitch Motor Speed", 0.0d).getEntry();
-        internalEncoderPosition = encoderTab.add("Internal Encoder Position", 0.0d).getEntry();
     }
+
 
     @Override
     public void periodic() {
@@ -98,7 +111,7 @@ public class PitchMotorSubsystem extends SubsystemBase {
      * @param motorSpeed
      * @return motorSpeed + force to fight gravity
      */
-    private double addBaseIdleForce(double motorSpeed) {
+    protected double addBaseIdleForce(double motorSpeed) {
         // clamps it between -1 and 1
         return clamp(motorSpeed + this.baseIdleForce, -1.0, 1.0);
     }
