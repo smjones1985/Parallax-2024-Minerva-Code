@@ -93,14 +93,15 @@ public class PitchMotorSubsystem extends SubsystemBase {
     }
 
     public void constantAim(){
-        if(!constantAim)
-            constantAim = true;
-        else
-            constantAim = false;
+        constantAim = !constantAim;
     }
 
     public boolean getConstantAim(){
         return constantAim;
+    }
+
+    public void setConstantAim(boolean constantAim){
+        this.constantAim = constantAim;
     }
 
     /**

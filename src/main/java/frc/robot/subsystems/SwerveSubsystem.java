@@ -27,6 +27,7 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Fusion2d;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.SensorConstants;
 import frc.robot.Constants.TargetPosConstants;
@@ -80,6 +81,10 @@ public class SwerveSubsystem extends SubsystemBase {
     private final Pigeon2 gyro = new Pigeon2(SensorConstants.kPigeonID);
     private final SwerveDriveOdometry odometer = new SwerveDriveOdometry(DriveConstants.kDriveKinematics,
             new Rotation2d(0), getModulePositions());
+    private Fusion2d pigeonFusion = new Fusion2d(gyro);
+    private Pose2d llBotPose;
+    private Pose2d pigeonBotPose;
+    private Pose2d odometryBotPose;
 
     private static final SendableChooser<String> colorChooser = new SendableChooser<>();
     private final String red = "Red", blue = "Blue";
@@ -102,7 +107,8 @@ public class SwerveSubsystem extends SubsystemBase {
         // makes a team color chooser
         colorChooser.addOption(red, red);
         colorChooser.addOption(blue, blue);
-        //driverBoard.add("Team Chooser", colorChooser).withWidget(BuiltInWidgets.kComboBoxChooser);
+        // driverBoard.add("Team Chooser",
+        // colorChooser).withWidget(BuiltInWidgets.kComboBoxChooser);
 
         xLimiter = new AccelerationLimiter(DriveConstants.kTeleDriveMaxAccelerationUnitsPerSecond);
         yLimiter = new AccelerationLimiter(DriveConstants.kTeleDriveMaxAccelerationUnitsPerSecond);
@@ -214,6 +220,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
     public void resetOdometry(Pose2d pose) {
         odometer.resetPosition(getRotation2d(), getModulePositions(), pose);
+        pigeonFusion.resetPosition(pose);
     }
 
     public void initializeJoystickRunFromField() {
@@ -251,13 +258,15 @@ public class SwerveSubsystem extends SubsystemBase {
         thetaController.setPID(TargetPosConstants.kPAngleController, 0, 0);
         thetaController.reset();
     }
-    public void constantAim(){
-        if(!constantAim)
+
+    public void constantAim() {
+        if (!constantAim)
             constantAim = true;
         else
             constantAim = false;
     }
-    public boolean getConstantAim(){
+
+    public boolean getConstantAim() {
         return constantAim;
     }
 
@@ -279,12 +288,10 @@ public class SwerveSubsystem extends SubsystemBase {
         double unitCircleAngle = Math.atan2(ySpeed, xSpeed);
         xSpeed += Math.copySign(TargetPosConstants.kMinSpeedMetersPerSec, xSpeed) * Math.abs(Math.cos(unitCircleAngle));
         ySpeed += Math.copySign(TargetPosConstants.kMinSpeedMetersPerSec, ySpeed) * Math.abs(Math.sin(unitCircleAngle));
-        
-   
+
         xSpeed = -xSpeed;
         ySpeed = -ySpeed;
-        
-        
+
         runModulesFieldRelative(xSpeed, ySpeed, turningSpeed);
     }
 
@@ -315,6 +322,7 @@ public class SwerveSubsystem extends SubsystemBase {
         // Output each module states to wheels
         setModuleStates(moduleStates);
     }
+
     public void runModulesRobotRelative(ChassisSpeeds chassisSpeeds) {
         // Converts robot speeds to speeds relative to field
         this.chassisSpeeds = chassisSpeeds;
@@ -331,6 +339,7 @@ public class SwerveSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         odometer.update(getRotation2d(), getModulePositions());
+        pigeonFusion.update();
         SmartDashboard.putNumber("Heading", getHeading());
         SmartDashboard.putNumber("odometry heading", odometer.getPoseMeters().getRotation().getDegrees());
         SmartDashboard.putString("Robot Location", getPose().getTranslation().toString());
@@ -345,27 +354,11 @@ public class SwerveSubsystem extends SubsystemBase {
 
         LimelightResults llr = LimelightHelpers.getLatestResults("limelight-shooter");
         int fiducialCount = llr.targetingResults.targets_Fiducials.length;
-
-        if (!DriverStation.isAutonomous() && !camsDisabled && fiducialCount >= 2 && frontLeft.getDriveVelocity() < 0.2) { // Make sure there are at least 2 AprilTags in sight for accuracy
-            Pose2d botPose = LimelightHelpers.getBotPose2d_wpiBlue("limelight-shooter");
-
-            if(lastSeenPosition != null){
-
-                Rotation2d difference = lastSeenPosition.getRotation().minus(botPose.getRotation());
-
-                if(difference.getDegrees() < 2){
-                    resetOdometry(botPose);
-                }
-                    if(isOnRed())
-                        setHeading(botPose.getRotation().getDegrees()+180);
-                    else
-                        setHeading(botPose.getRotation().getDegrees());
-            }
-
-            lastSeenPosition = botPose;
-        }
+        llBotPose = LimelightHelpers.getBotPose2d_wpiBlue("limelight-shooter");
+        pigeonBotPose = pigeonFusion.getPoseMeters();
 
         logOdometry();
+        logPigeonFusion();
         logPigeonState();
         logSwerveStates();
     }
@@ -377,8 +370,8 @@ public class SwerveSubsystem extends SubsystemBase {
         backRight.stop();
     }
 
-    public void disableCams(){
-        if(camsDisabled)
+    public void disableCams() {
+        if (camsDisabled)
             camsDisabled = false;
         else
             camsDisabled = true;
@@ -406,7 +399,7 @@ public class SwerveSubsystem extends SubsystemBase {
     public static boolean isOnRed() {
         // gets the selected team color from the suffleboard
         Optional<Alliance> ally = DriverStation.getAlliance();
-        if(ally.isPresent()){
+        if (ally.isPresent()) {
             return ally.get() == Alliance.Red;
         }
 
@@ -419,28 +412,32 @@ public class SwerveSubsystem extends SubsystemBase {
     public double getFLAbsUnfilteredEncoder() {
         return frontLeft.getUnfilteredPosition();
     }
-    public double getFLAbsEncoder(){
+
+    public double getFLAbsEncoder() {
         return frontLeft.getAbsolutePosition();
     }
 
     public double getFRAbsUnfilteredEncoder() {
         return frontRight.getUnfilteredPosition();
     }
-    public double getFRAbsEncoder(){
+
+    public double getFRAbsEncoder() {
         return frontRight.getAbsolutePosition();
     }
 
     public double getBLAbsUnfilteredEncoder() {
         return backLeft.getUnfilteredPosition();
     }
-    public double getBLAbsEncoder(){
+
+    public double getBLAbsEncoder() {
         return backLeft.getAbsolutePosition();
     }
 
     public double getBRAbsUnfilteredEncoder() {
         return backRight.getUnfilteredPosition();
     }
-    public double getBRAbsEncoder(){
+
+    public double getBRAbsEncoder() {
         return backRight.getAbsolutePosition();
     }
 
@@ -493,5 +490,15 @@ public class SwerveSubsystem extends SubsystemBase {
     // Send Odometry Position on field to Advantage Kit
     public void logOdometry() {
         Logger.recordOutput("Odometry/Location", odometer.getPoseMeters());
+    }
+
+    // Send Pigeon Fusion data to Advantage Kit
+    public void logPigeonFusion() {
+        Logger.recordOutput("PigeonFusion/Location", pigeonFusion.getPoseMeters());
+    }
+
+    // Send LimeLight Position estimation to Advantage Kit
+    public void logLimeLightPosition() {
+        Logger.recordOutput("LimeLight/Location", llBotPose);
     }
 }

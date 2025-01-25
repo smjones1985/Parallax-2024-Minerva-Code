@@ -1,5 +1,6 @@
 package frc.robot.subsystems.ArmSubsystems;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -48,15 +49,44 @@ public class PitchMotorSubsystemTest {
 
     @Test
     public void testAddBaseIdleForce() {
-        double motorSpeed = 0.5;
-        double result = pitchMotorSubsystem.addBaseIdleForce(motorSpeed);
+        var motorSpeed = 0.5;
+        var result = pitchMotorSubsystem.addBaseIdleForce(motorSpeed);
         assertTrue(result >= -1.0 && result <= 1.0, "Motor speed should be clamped between -1.0 and 1.0");
     }
 
     @Test
     public void testRunPitchMotor() {
-        double motorSpeed = 0.8;
+        var motorSpeed = 0.8;
         pitchMotorSubsystem.runPitchMotor(motorSpeed);
     }
 
+    //these tests highlight that the constant aim always flips the current setting. Was this desired behavior?
+    @Test
+    public void testConstantAimSetTrue() {
+        pitchMotorSubsystem.setConstantAim(true);
+        pitchMotorSubsystem.constantAim();
+        assertFalse(pitchMotorSubsystem.getConstantAim());
+    }
+
+    
+    @Test
+    public void testConstantAimSetFalse() {
+        pitchMotorSubsystem.setConstantAim(false);
+        pitchMotorSubsystem.constantAim();
+        assertTrue(pitchMotorSubsystem.getConstantAim());
+    }
+
+
+    
+    @Test
+    public void testRunPitchMotorWithKP() {
+        var angleDeg = 89.0;
+        pitchMotorSubsystem.runPitchMotorWithKP(angleDeg);
+    }
+
+    @Test
+    public void testRunPitchMotorWithKP_clamps() {
+        var angleDeg = 91.0;
+        pitchMotorSubsystem.runPitchMotorWithKP(angleDeg);
+    }
 }

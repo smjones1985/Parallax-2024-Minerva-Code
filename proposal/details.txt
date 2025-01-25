@@ -1,0 +1,79 @@
+1. Code structure change
+
+/src
+  /main
+    /java
+      /frc
+        /robot
+          /core              // Logic, Subsystems, Commands
+            /subsystems
+            /commands
+            /utilities
+          /device            // Hardware Interfaces & Wrappers
+            /motors
+            /sensors
+            /actuators
+          /application       // Robot Orchestration & Autonomous Logic
+          /config            // Config & Constants
+
+
+
+2. Unit tests - samples in for PitchMotorSubsystemTest. Code should not go in without unit tests as well as results from integration testing (user actually connecting to machine to validate behavior)
+- start with unit test to validate logic before connecting to hardware when possible 
+
+3. CICD - Continuous Integration Continuous Delivery/Deployment
+    - adding build step
+    - Cut releases to take snapshot of final code
+
+4. Update github rules to require review from code owners and passing build/tests
+
+5. Ensure devices all leverage interfaces
+
+Example device layout:
+/device
+  /motors
+    MotorController.java         // Motor abstraction interface
+    SparkMaxMotorController.java // Implementation for CANSparkMax
+    FalconMotorController.java   // Implementation for TalonFX motors
+  /sensors
+    Sensor.java                  // Base sensor abstraction
+    EncoderSensor.java           // Encoder abstraction
+    LimelightSensor.java         // Camera-specific implementation
+    PhotoElectricSensor.java     // Other custom sensors
+  /actuators
+    PneumaticActuator.java       // Pneumatics control abstraction
+    SolenoidController.java      // Solenoid-specific functionality
+
+Example:
+public interface MotorController {
+    void set(double speed);
+    double getEncoderPosition();
+}
+
+public class SparkMaxMotorController implements MotorController {
+    private final CANSparkMax motor;
+    private final RelativeEncoder encoder;
+
+    public SparkMaxMotorController(int id, CANSparkMax.MotorType type) {
+        motor = new CANSparkMax(id, type);
+        encoder = motor.getEncoder();
+    }
+
+    @Override
+    public void set(double speed) {
+        motor.set(speed);
+    }
+
+    @Override
+    public double getEncoderPosition() {
+        return encoder.getPosition();
+    }
+}
+
+6. Property file over constants
+ - multiple configurations in app, set active (testing, competition, demo)
+
+7. Onboarding document: required review, documentation, etc - this probably exists in some fashion
+
+
+
